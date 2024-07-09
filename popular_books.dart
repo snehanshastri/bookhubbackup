@@ -1,4 +1,5 @@
 import 'package:bookhubapp/book_detail_screen.dart';
+import 'package:bookhubapp/models/audio_book.dart';
 import 'package:flutter/material.dart';
 import 'package:bookhubapp/models/books.dart';
 import 'package:bookhubapp/widgets/buy_book_wrapper.dart';
@@ -40,7 +41,7 @@ class PopularBooks extends StatelessWidget {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => BookDetailScreen(book: book),
+              builder: (context) => BookDetailScreen(book: book, isLoggedIn: false, updateCart: (List<Book> books, List<AudioBook> audioBooks) {  },),
             ),
           );
         },
