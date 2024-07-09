@@ -7,6 +7,7 @@ class LandingPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       theme: ThemeData.dark().copyWith(
         scaffoldBackgroundColor: const Color.fromARGB(255, 255, 255, 255),
       ),
@@ -26,7 +27,9 @@ class Home extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    
     return Container(
+      
       width: MediaQuery.of(context).size.width,
       height: MediaQuery.of(context).size.height,
       color: Colors.white,
@@ -99,7 +102,7 @@ class Home extends StatelessWidget {
               SizedBox(
                 width: 320,
                 child: Text(
-                  'All your favourite books in one place, read any book, staying at home, on travelling, or anywhere else',
+                  'Your favourite books in one place, read any book, staying at home, on travelling, or anywhere else',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: Color(0xFF9D9D9D),
