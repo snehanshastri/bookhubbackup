@@ -1,5 +1,10 @@
 import 'package:bookhubapp/api/generated_books.dart';
+import 'package:bookhubapp/auth_service.dart';
 import 'package:bookhubapp/book_detail_screen.dart';
+import 'package:bookhubapp/chatpage.dart';
+import 'package:bookhubapp/loginpage.dart';
+import 'package:bookhubapp/models/audio_book.dart';
+import 'package:bookhubapp/profile.dart';
 import 'package:flutter/material.dart';
 import 'package:bookhubapp/keep_reading_section.dart';
 import 'package:bookhubapp/last_opened_book.dart';
@@ -16,7 +21,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final bool isLoggedIn = false;
+  final bool isLoggedIn = AuthService.isLoggedIn();
   String searchQuery = '';
   List<Book> filteredBooks = [];
 
@@ -46,9 +51,18 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void goToBookDetails(BuildContext context, Book book) {
-    Navigator.push(context, new MaterialPageRoute(
-   builder: (context) => new BookDetailScreen(book: book))
- );
+    Navigator.push(
+        context,
+      MaterialPageRoute(
+  builder: (context) => BookDetailScreen(
+    book: book,
+    isLoggedIn: AuthService.isLoggedIn(),
+    updateCart: (List<Book> books, List<AudioBook> audioBooks) {
+      // Implement your update cart logic here
+    },
+  ),
+)
+);
   }
 
   @override
@@ -68,140 +82,168 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       body: SingleChildScrollView(
         physics: const BouncingScrollPhysics(),
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            return SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                child: TextField(
+                  onChanged: updateSearchQuery,
+                  decoration: InputDecoration(
+                    hintText: "Search",
+                    hintStyle: const TextStyle(
+                      color: Colors.black,
+                    ),
+                    prefixIcon: const Icon(
+                      Icons.search,
+                      color: Colors.black,
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                  ),
+                  style: const TextStyle(
+                    fontSize: 16,
+                    color: Colors.black,
+                    fontFamily: 'Poppins',
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              if (searchQuery.isNotEmpty)
+                Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8.0),
-                      child: TextField(
-                        onChanged: updateSearchQuery,
-                        decoration: InputDecoration(
-                          hintText: "Search",
-                          hintStyle: const TextStyle(
-                            color: Colors.black,
-                          ),
-                          prefixIcon: const Icon(
-                            Icons.search,
-                            color: Colors.black,
-                          ),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(30),
-                          ),
-                        ),
-                        style: const TextStyle(
-                          fontSize: 16,
-                          color: Colors.black,
-                          fontFamily: 'Poppins',
-                        ),
+                    const Text(
+                      "Search Results",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
+                        fontFamily: 'Poppins',
                       ),
                     ),
-                    const SizedBox(height: 20),
-                    if (searchQuery.isNotEmpty)
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            "Search Results",
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
+                    const SizedBox(height: 10),
+                    ListView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: filteredBooks.length,
+                      itemBuilder: (context, index) {
+                        final book = filteredBooks[index];
+                        return ListTile(
+                          leading: Image.network(book.imageUrl, width: 50, height: 50),
+                          title: Text(
+                            book.title,
+                            style: const TextStyle(
+                              fontSize: 16,
                               color: Colors.black,
                               fontFamily: 'Poppins',
                             ),
                           ),
-                          const SizedBox(height: 10),
-                          ListView.builder(
-                            shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
-                            itemCount: filteredBooks.length,
-                            itemBuilder: (context, index) {
-                              final book = filteredBooks[index];
-                              return ListTile(
-                                leading: Image.network(book.imageUrl, width: 50, height: 50),
-                                title: Text(
-                                  book.title,
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    color: Colors.black,
-                                    fontFamily: 'Poppins',
-                                  ),
-                                ),
-                                subtitle: Text(
-                                  book.authorName,
-                                  style: const TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.black,
-                                    fontFamily: 'Poppins',
-                                  ),
-                                ),
-                                onTap: () {
-                                  goToBookDetails(context, book);
-                                },
-                              );
-                            },
+                          subtitle: Text(
+                            book.authorName,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              color: Colors.black,
+                              fontFamily: 'Poppins',
+                            ),
                           ),
-                          const SizedBox(height: 20),
-                        ],
-                      ),
-                    const Text(
-                      "Your Books",
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
-                        fontFamily: 'Poppins',
-                      ),
+                          onTap: () {
+                            goToBookDetails(context, book);
+                          },
+                        );
+                      },
                     ),
-                    const SizedBox(height: 10),
-                    const LastOpenedBook(),
                     const SizedBox(height: 20),
-                    const Text(
-                      "Keep Reading",
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
-                        fontFamily: 'Poppins',
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    const KeepReadingSection(),
-                    const SizedBox(height: 20),
-                    const Text(
-                      "Market",
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
-                        fontFamily: 'Poppins',
-                      ),
-                    ),
-                    const SizedBox(height: 10),
+                  ],
+                ),
+              const Text(
+                "Your Books",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                  fontFamily: 'Poppins',
+                ),
+              ),
+              const SizedBox(height: 10),
+              const LastOpenedBook(),
+              const SizedBox(height: 20),
+              const Text(
+                "Keep Reading",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                  fontFamily: 'Poppins',
+                ),
+              ),
+              const SizedBox(height: 10),
+              const KeepReadingSection(),
+              const SizedBox(height: 20),
+              const Text(
+                "Market",
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                  fontFamily: 'Poppins',
+                ),
+              ),
+              const SizedBox(height: 5),
+              const Text(
+                "",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                  fontFamily: 'Poppins',
+                ),
+              ),
+              const SizedBox(height: 10),
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
                     PopularBooks(onBookTap: goToBookDetails),
-                    const SizedBox(height: 20),
-                    DiscountBooks(onBookTap: goToBookDetails),
-                    const SizedBox(height: 20),
-                    const Text(
-                      "Audio Books",
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
-                        fontFamily: 'Poppins',
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    const AudioBooks(),
                   ],
                 ),
               ),
-            );
-          },
+              const SizedBox(height: 20),
+              const Text(
+                "",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                  fontFamily: 'Poppins',
+                ),
+              ),
+              const SizedBox(height: 10),
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    DiscountBooks(onBookTap: goToBookDetails),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
+              const Text(
+                "Audio Books",
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                  fontFamily: 'Poppins',
+                ),
+              ),
+              const SizedBox(height: 2),
+              const AudioBooks(),
+            ],
+          ),
         ),
       ),
       bottomNavigationBar: Container(
@@ -212,15 +254,53 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             IconButton(
               icon: const Icon(Icons.message, color: Colors.white),
-              onPressed: () => navigate(context, '/messages'),
+              onPressed: () => {
+              if(isLoggedIn)
+              {
+              Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) => ChatPage(
+               
+                )))
+              }
+              else
+              {
+                 Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) => LoginPage()
+            )
+            )
+              }
+              }
             ),
             IconButton(
               icon: const Icon(Icons.notifications, color: Colors.white),
-              onPressed: () => navigate(context, '/notifications'),
+         onPressed: () => navigate(context,'/notification'),
             ),
             IconButton(
               icon: const Icon(Icons.person, color: Colors.white),
-              onPressed: () => navigate(context, '/profile'),
+              onPressed: () =>{
+               if(isLoggedIn)
+              {
+              Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) => ProfilePage(
+               
+                )))
+              }
+              else
+              {
+                 Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) => LoginPage()
+            )
+            )
+              }
+              }
             ),
           ],
         ),
