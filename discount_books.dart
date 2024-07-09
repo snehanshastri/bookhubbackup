@@ -1,4 +1,6 @@
+import 'package:bookhubapp/auth_service.dart';
 import 'package:bookhubapp/book_detail_screen.dart';
+import 'package:bookhubapp/models/audio_book.dart';
 import 'package:flutter/material.dart';
 import 'package:bookhubapp/models/books.dart';
 import 'package:bookhubapp/widgets/buy_book_wrapper.dart';
@@ -39,7 +41,7 @@ class DiscountBooks extends StatelessWidget {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => BookDetailScreen(book: book),
+              builder: (context) => BookDetailScreen(book: book, isLoggedIn: AuthService.isLoggedIn(), updateCart: (List<Book> books, List<AudioBook> audioBooks) {  },),
             ),
           );
         },
