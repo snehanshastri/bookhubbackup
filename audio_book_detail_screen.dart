@@ -1,10 +1,52 @@
+import 'package:bookhubapp/models/books.dart';
 import 'package:flutter/material.dart';
-import 'package:bookhubapp/models/audio_book.dart'; // Ensure you have an AudioBook model
+import 'package:get/get.dart';
+import 'package:bookhubapp/models/audio_book.dart';
+import 'package:bookhubapp/loginpage.dart';
+import 'package:bookhubapp/cart.dart';
+import 'package:bookhubapp/auth_service.dart';
+import 'package:bookhubapp/widgets/cartcontroller.dart';
 
 class AudioBookDetailScreen extends StatelessWidget {
   final AudioBook audioBook;
+  final CartController cartController = Get.put(CartController()); // Get the CartController instance
+  final bool isLoggedIn = AuthService.isLoggedIn(); // Check if user is logged in
 
-  const AudioBookDetailScreen({super.key, required this.audioBook});
+  AudioBookDetailScreen({
+    Key? key,
+    required this.audioBook,
+    required bool isLoggedIn,
+  }) : super(key: key);
+
+  void navigateToLoginPage(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => LoginPage()),
+    );
+  }
+
+  void addToCartAction(BuildContext context) {
+    if (isLoggedIn) {
+      if (cartController.isAudioBookInCart(audioBook)) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${audioBook.title} is already in the cart'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      } else {
+        cartController.addToAudioCart(audioBook);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${audioBook.title} added to cart'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    } else {
+      navigateToLoginPage(context);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -12,9 +54,9 @@ class AudioBookDetailScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(audioBook.title, style: const TextStyle(color: Colors.black)),
-        iconTheme: const IconThemeData(color: Colors.black), // Change app bar icon color
-        backgroundColor: Colors.white, // Change app bar background color if needed
+        title: Text(audioBook.title, style: TextStyle(color: Colors.black)),
+        iconTheme: IconThemeData(color: Colors.black),
+        backgroundColor: Colors.white,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -28,57 +70,47 @@ class AudioBookDetailScreen extends StatelessWidget {
                 width: screenWidth * 0.4,
               ),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16),
             Text(
               audioBook.title,
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(color: Colors.black),
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(color: Colors.black),
             ),
             Text(
               audioBook.genre,
               style: Theme.of(context).textTheme.titleMedium?.copyWith(color: Colors.black),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16),
             Text(
               audioBook.description,
               style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: Colors.black),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16),
             Text(
-              'Price: ${audioBook.price}',
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: Colors.black),
+              'Price: ₹ ${audioBook.price}',
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(color: Colors.black),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16),
             Text(
               'Rating: ${audioBook.rating}',
               style: Theme.of(context).textTheme.titleMedium?.copyWith(color: Colors.black),
             ),
-            const Spacer(),
-            Row(
-              children: [
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () {
-                      // Implement Buy Now functionality
-                    },
-                    style: ElevatedButton.styleFrom(
-                      foregroundColor: Colors.white, backgroundColor: Colors.black, // Button text color
-                    ),
-                    child: const Text('Buy Now'),
+            Spacer(),
+            Center(
+              child: ElevatedButton(
+                onPressed: () => addToCartAction(context),
+                style: ElevatedButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  backgroundColor: Colors.black,
+                  padding: EdgeInsets.symmetric(vertical: 16, horizontal: 32),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30),
                   ),
                 ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () {
-                      // Implement Add to Cart functionality
-                    },
-                    style: ElevatedButton.styleFrom(
-                      foregroundColor: Colors.white, backgroundColor: Colors.black, // Button text color
-                    ),
-                    child: const Text('Add to Cart'),
-                  ),
+                child: Text(
+                  'Add to Cart',
+                  style: TextStyle(fontSize: 18),
                 ),
-              ],
+              ),
             ),
           ],
         ),
