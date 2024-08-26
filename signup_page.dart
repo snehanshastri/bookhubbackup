@@ -1,4 +1,3 @@
-import 'package:bookhubapp/auth_service.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:bookhubapp/firebase_auth_implementation/firebase_auth_services.dart';
@@ -11,14 +10,18 @@ class SignupPage extends StatelessWidget {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _balanceController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  final RxBool _isLoading = false.obs; // Use RxBool for reactive isLoading
+  final RxBool _isLoading = false.obs;
+
+  SignupPage({super.key}); // Use RxBool for reactive isLoading
 
   @override
   void dispose() {
     _nameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
+    _balanceController.dispose();
   }
 
   @override
@@ -101,6 +104,26 @@ class SignupPage extends StatelessWidget {
                     return null;
                   },
                 ),
+                const SizedBox(height: 16.0),
+                TextFormField(
+                  controller: _balanceController,
+                  decoration: InputDecoration(
+                    labelText: 'Initial Balance',
+                    labelStyle: const TextStyle(fontSize: 16.0),
+                    border: const OutlineInputBorder(),
+                    hoverColor: Colors.black.withOpacity(0.2),
+                  ),
+                  keyboardType: TextInputType.number, // Numeric input for balance
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter your initial balance';
+                    }
+                    if (double.tryParse(value) == null) {
+                      return 'Please enter a valid number';
+                    }
+                    return null;
+                  },
+                ),
                 const SizedBox(height: 24.0),
                 SizedBox(
                   width: double.infinity, // Set the width to infinity
@@ -135,6 +158,7 @@ class SignupPage extends StatelessWidget {
         String name = _nameController.text;
         String email = _emailController.text;
         String password = _passwordController.text;
+        double balance = double.parse(_balanceController.text);
 
         // Call your authentication service for signup
         firebase_auth.User? user = await _auth.signUpWithEmailAndPassword(email, password);
@@ -145,6 +169,7 @@ class SignupPage extends StatelessWidget {
             'uid': user.uid,
             'name': name,
             'email': email,
+            'bankBalance': balance, // Add initial balance
             'profilePicture': '', // Add default or uploaded profile picture URL here
             'purchasedBooks': [],
             'purchasedAudioBooks': [],
