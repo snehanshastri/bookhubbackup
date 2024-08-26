@@ -150,7 +150,7 @@ class Book {
       title: json['title'],
       category: Category.values.firstWhere((e) => e.toString() == 'Category.${json['category']}'),
       isbn: json['isbn'],
-      price: json['price'],
+      price: (json['price'] as num).toDouble(),
       isFree: json['isFree'],
       isPurchased: json['isPurchased'],
       description: json['description'],
