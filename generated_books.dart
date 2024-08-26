@@ -14,7 +14,7 @@ List<Book> getBooksByPurchased() {
 
 List<Book> getBooksByFree() {
   List<Book> allBooks = getAllBooks();
-  return allBooks.where((book) => book.isPurchased == true).toList();
+  return allBooks.where((book) => book.isFree == true).toList();
 }
 
 List<Book> getBooksByOpenPage(int page) {
@@ -397,17 +397,17 @@ List<Book> getAllBooks()
 }
 
 List<AudioBook> getAllAudioBooks() {
-  final uuid = Uuid();
+  const uuid = Uuid();
   return [
     AudioBook(
       id: uuid.v4(),
       title: "Lady Susan",
-      coverImage: "https://th.bing.com/th/id/OIP.s-nOC9TJB62W_osM7KR2igHaHa?w=188&h=188&c=7&r=0&o=5&dpr=1.5&pid=1.7",
+      coverImage: "https://th.bing.com/th/id/OIP.AO6jvPTfi2cddiA8egvLkgHaHa?w=191&h=191&c=7&r=0&o=5&dpr=1.5&pid=1.7",
       genre: "Fiction",
       description: "A novella featuring the cunning and manipulative Lady Susan Vernon, who navigates society to secure advantageous marriages for herself and her daughter.",
       rating: 4.8,
       price: 119,
-      audioPath:"gs://bookhubapp-ca543.appspot.com/audiobooks/ladysusan"
+      audioPath:"gs://bookhubapp-ca543.appspot.com/audiobooks/ladysusan/ladysusan_1_austen_64kb.mp3"
     ),
     AudioBook(
       id: uuid.v4(),
@@ -417,7 +417,7 @@ List<AudioBook> getAllAudioBooks() {
       description: "A novel depicting the life of an orphan boy who navigates the harsh realities of Victorian London, encountering both kindness and cruelty.",
       rating: 4.7,
       price: 119,
-      audioPath:"gs://bookhubapp-ca543.appspot.com/audiobooks/oliver twist"
+      audioPath:"gs://bookhubapp-ca543.appspot.com/audiobooks/oliver twist/dickens_oliver_twist_01_64kb.mp3"
     ),
     AudioBook(
       id: uuid.v4(),
@@ -427,7 +427,7 @@ List<AudioBook> getAllAudioBooks() {
       description: "A fantastical tale of a man who ages backward, experiencing life in reverse, while those around him age normally.",
       rating: 4.6,
       price: 119,
-      audioPath:"gs://bookhubapp-ca543.appspot.com/audiobooks/the curious case of benjamin button"
+      audioPath:"gs://bookhubapp-ca543.appspot.com/audiobooks/the curious case of benjamin button/benjamanbutton_01_fitzgerald_64kb.mp3"
     ),
   ];
 }
