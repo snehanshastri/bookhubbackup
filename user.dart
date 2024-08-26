@@ -10,6 +10,7 @@ class User {
   final List<AudioBook> purchasedAudioBooks;
   final Map<String, int> lastOpenedPage;
   final Map<String, int> lastPlayedAudio;
+ double bankBalance;
 
   User({
     required this.uid,
@@ -20,6 +21,7 @@ class User {
     this.purchasedAudioBooks = const [],
     this.lastOpenedPage = const {},
     this.lastPlayedAudio = const {},
+    this.bankBalance = 0.0,
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
@@ -32,6 +34,7 @@ class User {
       purchasedAudioBooks: _convertDynamicListToAudioBooks(json['purchasedAudioBooks']),
       lastOpenedPage: json['lastOpenedPage'] != null ? Map<String, int>.from(json['lastOpenedPage']) : {},
       lastPlayedAudio: json['lastPlayedAudio'] != null ? Map<String, int>.from(json['lastPlayedAudio']) : {},
+      bankBalance: json['bankBalance']?.toDouble() ?? 0.0,
     );
   }
 
@@ -45,6 +48,7 @@ class User {
       'purchasedAudioBooks': _convertAudioBooksToDynamicList(purchasedAudioBooks),
       'lastOpenedPage': lastOpenedPage,
       'lastPlayedAudio': lastPlayedAudio,
+      'bankBalance': bankBalance,
     };
   }
 
