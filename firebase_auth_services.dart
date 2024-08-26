@@ -29,9 +29,9 @@ class FirebaseAuthService {
     return null;
   }
 
-  Future<void> logout() async {
+  static Future<void> logout() async {
     try {
-      await _auth.signOut();
+      await FirebaseAuth.instance.signOut();
     } catch (e) {
       print("Error occurred during logout: $e");
     }
