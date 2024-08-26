@@ -1,50 +1,37 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_storage/firebase_storage.dart';
-import 'package:bookhubapp/models/books.dart';
 import 'package:bookhubapp/models/audio_book.dart';
+import 'package:bookhubapp/models/books.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class DataService {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final FirebaseStorage _storage = FirebaseStorage.instance;
+  final FirebaseFirestore _db = FirebaseFirestore.instance;
 
   Future<List<Book>> getPurchasedBooks(String userId) async {
-    List<Book> books = [];
-    QuerySnapshot snapshot = await _firestore.collection('users')
-        .doc(userId)
-        .collection('purchasedBooks')
-        .get();
-
-    for (var doc in snapshot.docs) {
-      var data = doc.data() as Map<String, dynamic>;
-      String pdfPath = await _storage.ref(data['pdfPath']).getDownloadURL();
-      books.add(Book(
-        title: data['title'],
-        authorName: data['authorName'],
-        price: data['price'],
-        imageUrl: data['imageUrl'],
-        pdfPath: pdfPath, category: data['category'], isbn: data['isbn'], isFree: data['isFree'], isPurchased: data['isPurchased'], description: data['description'], yearRelease: data['yearRelease'], rating: data['rating'], pages: data['pages'], lastOpenPage: data['lastOpenPage'], totalXP: data['totalXP'], genre: data['genre'], coverImage: data['coverImage'],
-      ));
+    try {
+      var userDoc = await _db.collection('users').doc(userId).get();
+      if (userDoc.exists) {
+        var purchasedBooks = userDoc.data()?['purchasedBooks'] as List<dynamic>? ?? [];
+        return purchasedBooks.map((bookData) => Book.fromJson(bookData)).toList();
+      } else {
+        print('User document does not exist.');
+      }
+    } catch (e) {
+      print('Error fetching purchased books: $e');
     }
-    return books;
+    return [];
   }
 
   Future<List<AudioBook>> getPurchasedAudioBooks(String userId) async {
-    List<AudioBook> audioBooks = [];
-    QuerySnapshot snapshot = await _firestore.collection('users')
-        .doc(userId)
-        .collection('purchasedAudioBooks')
-        .get();
-
-    for (var doc in snapshot.docs) {
-      var data = doc.data() as Map<String, dynamic>;
-      String audioUrl = await _storage.ref(data['audioPath']).getDownloadURL();
-      audioBooks.add(AudioBook(
-        title: data['title'],
-        price: data['price'],
-        coverImage: data['coverImage'],
-        audioPath: audioUrl, id: data['id'], genre: data['genre'], description: data['description'], rating: data['rating'],
-      ));
+    try {
+      var userDoc = await _db.collection('users').doc(userId).get();
+      if (userDoc.exists) {
+        var purchasedAudioBooks = userDoc.data()?['purchasedAudioBooks'] as List<dynamic>? ?? [];
+        return purchasedAudioBooks.map((audioBookData) => AudioBook.fromJson(audioBookData)).toList();
+      } else {
+        print('User document does not exist.');
+      }
+    } catch (e) {
+      print('Error fetching purchased audiobooks: $e');
     }
-    return audioBooks;
+    return [];
   }
 }
