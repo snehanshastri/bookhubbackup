@@ -1,13 +1,12 @@
+import 'package:bookhubapp/all_purchased_books.dart';
 import 'package:bookhubapp/api/generated_books.dart';
 import 'package:bookhubapp/auth_service.dart';
 import 'package:bookhubapp/book_detail_screen.dart';
-import 'package:bookhubapp/chatpage.dart';
 import 'package:bookhubapp/loginpage.dart';
 import 'package:bookhubapp/models/audio_book.dart';
 import 'package:bookhubapp/profile.dart';
+import 'package:bookhubapp/userslistpage.dart';
 import 'package:flutter/material.dart';
-import 'package:bookhubapp/keep_reading_section.dart';
-import 'package:bookhubapp/last_opened_book.dart';
 import 'package:bookhubapp/popular_books.dart';
 import 'package:bookhubapp/discount_books.dart';
 import 'package:bookhubapp/widgets/audiobooks.dart';
@@ -52,17 +51,17 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void goToBookDetails(BuildContext context, Book book) {
     Navigator.push(
-        context,
+      context,
       MaterialPageRoute(
-  builder: (context) => BookDetailScreen(
-    book: book,
-    isLoggedIn: AuthService.isLoggedIn(),
-    updateCart: (List<Book> books, List<AudioBook> audioBooks) {
-      // Implement your update cart logic here
-    },
-  ),
-)
-);
+        builder: (context) => BookDetailScreen(
+          book: book,
+          isLoggedIn: AuthService.isLoggedIn(),
+          updateCart: (List<Book> books, List<AudioBook> audioBooks) {
+            // Implement your update cart logic here
+          },
+        ),
+      ),
+    );
   }
 
   @override
@@ -162,26 +161,34 @@ class _HomeScreenState extends State<HomeScreen> {
               const Text(
                 "Your Books",
                 style: TextStyle(
-                  fontSize: 18,
+                  fontSize: 22,
                   fontWeight: FontWeight.bold,
                   color: Colors.black,
                   fontFamily: 'Poppins',
                 ),
               ),
               const SizedBox(height: 10),
-              const LastOpenedBook(),
-              const SizedBox(height: 20),
-              const Text(
-                "Keep Reading",
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black,
-                  fontFamily: 'Poppins',
+              isLoggedIn ? const AllPurchasedBooks() : const Center(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 20.0),
+                  child: Text(
+                    'Please log in to see your books.',
+                    style: TextStyle(fontSize: 16, color: Colors.grey),
+                  ),
                 ),
               ),
+              // const SizedBox(height: 20),
+              // const Text(
+              //   "Keep Reading",
+              //   style: TextStyle(
+              //     fontSize: 18,
+              //     fontWeight: FontWeight.bold,
+              //     color: Colors.black,
+              //     fontFamily: 'Poppins',
+              //   ),
+              // ),
               const SizedBox(height: 10),
-              const KeepReadingSection(),
+              //const KeepReadingSection(),
               const SizedBox(height: 20),
               const Text(
                 "Market",
@@ -193,43 +200,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
               const SizedBox(height: 5),
-              const Text(
-                "",
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black,
-                  fontFamily: 'Poppins',
-                ),
-              ),
-              const SizedBox(height: 10),
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: [
-                    PopularBooks(onBookTap: goToBookDetails),
-                  ],
-                ),
-              ),
+              PopularBooks(onBookTap: goToBookDetails),
               const SizedBox(height: 20),
-              const Text(
-                "",
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black,
-                  fontFamily: 'Poppins',
-                ),
-              ),
-              const SizedBox(height: 10),
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: [
-                    DiscountBooks(onBookTap: goToBookDetails),
-                  ],
-                ),
-              ),
+              DiscountBooks(onBookTap: goToBookDetails),
               const SizedBox(height: 20),
               const Text(
                 "Audio Books",
@@ -254,53 +227,66 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             IconButton(
               icon: const Icon(Icons.message, color: Colors.white),
-              onPressed: () => {
-              if(isLoggedIn)
-              {
-              Navigator.push(
-        context,
-        MaterialPageRoute(
-            builder: (context) => ChatPage(
-               
-                )))
-              }
-              else
-              {
-                 Navigator.push(
-        context,
-        MaterialPageRoute(
-            builder: (context) => LoginPage()
-            )
-            )
-              }
-              }
+              onPressed: () {
+                if (isLoggedIn) {
+                  final currentuser = AuthService.currentUser;
+                  if (currentuser != null) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => UsersListPage()
+                      ),
+                    );
+                  }
+                } else {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => LoginPage(),
+                    ),
+                  );
+                }
+              },
             ),
-            IconButton(
-              icon: const Icon(Icons.notifications, color: Colors.white),
-         onPressed: () => navigate(context,'/notification'),
-            ),
+            // IconButton(
+            //   icon: const Icon(Icons.notifications, color: Colors.white),
+            //   onPressed: () {
+            //     if (isLoggedIn) {
+            //       Navigator.push(
+            //         context,
+            //         MaterialPageRoute(
+            //           builder: (context) => NotificationsPage(),
+            //         ),
+            //       );
+            //     } else {
+            //       Navigator.push(
+            //         context,
+            //         MaterialPageRoute(
+            //           builder: (context) => LoginPage(),
+            //         ),
+            //       );
+            //     }
+            //   },
+            // ),
             IconButton(
               icon: const Icon(Icons.person, color: Colors.white),
-              onPressed: () =>{
-               if(isLoggedIn)
-              {
-              Navigator.push(
-        context,
-        MaterialPageRoute(
-            builder: (context) => ProfilePage(
-               
-                )))
-              }
-              else
-              {
-                 Navigator.push(
-        context,
-        MaterialPageRoute(
-            builder: (context) => LoginPage()
-            )
-            )
-              }
-              }
+              onPressed: () {
+                if (isLoggedIn) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const ProfilePage(),
+                    ),
+                  );
+                } else {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => LoginPage(),
+                    ),
+                  );
+                }
+              },
             ),
           ],
         ),
