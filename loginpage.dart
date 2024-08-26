@@ -10,7 +10,9 @@ class LoginPage extends StatelessWidget {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  final RxBool _isLoading = false.obs; // Use RxBool for reactive isLoading
+  final RxBool _isLoading = false.obs;
+
+  LoginPage({super.key}); // Use RxBool for reactive isLoading
 
   @override
   void dispose() {
@@ -52,6 +54,7 @@ class LoginPage extends StatelessWidget {
                     border: const OutlineInputBorder(),
                     hoverColor: Colors.black.withOpacity(0.2),
                   ),
+                  style: const TextStyle(color: Colors.black), // Ensure the input text is black
                   validator: (value) {
                     if (value == null || value.isEmpty || !value.contains('@')) {
                       return 'Please enter a valid email address';
@@ -68,6 +71,7 @@ class LoginPage extends StatelessWidget {
                     border: const OutlineInputBorder(),
                     hoverColor: Colors.black.withOpacity(0.2),
                   ),
+                  style: const TextStyle(color: Colors.black), // Ensure the input text is black
                   obscureText: true, // Hide the password input
                   validator: (value) {
                     if (value == null || value.length < 8) {
