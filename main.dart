@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart' as auth;
 import 'package:bookhubapp/book_detail_screen.dart';
 import 'package:bookhubapp/cart.dart';
 import 'package:bookhubapp/landingpage.dart';
@@ -25,6 +26,7 @@ void main() async {
           appId: "1:704652166711:web:d637f496e9263053d821b2",
           messagingSenderId: "704652166711",
           projectId: "bookhubapp-ca543",
+          storageBucket: "gs://bookhubapp-ca543.appspot.com"
         ),
       );
     } else {
@@ -39,7 +41,7 @@ void main() async {
     print("Books uploaded successfully");
 
     List<AudioBook> audioBooks = getAllAudioBooks();
-    await addAudioBooksToFirestore(audioBooks);
+    await uploadAudioBooks(audioBooks);
     print("Audio books uploaded successfully");
   } catch (e) {
     print("Error initializing Firebase or uploading data: $e");
@@ -52,7 +54,7 @@ void main() async {
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -65,6 +67,7 @@ class MyApp extends StatelessWidget {
       getPages: [
         GetPage(name: '/', page: () => const LandingPage()),
         GetPage(name: '/login', page: () => LoginPage()),
+        
         GetPage(
           name: '/bookDetails',
           page: () => BookDetailScreen(
@@ -79,7 +82,14 @@ class MyApp extends StatelessWidget {
         ),
         GetPage(
           name: '/cart',
-          page: () => CartPage(),
+          page: () {
+            auth.User? user = AuthService.currentUser;
+            if (user != null) {
+              return CartPage( firebaseUser: user) ;
+            } else {
+              return LoginPage();
+            }
+          },
           binding: BindingsBuilder(() {
             Get.put(CartController());
           }),
@@ -94,7 +104,7 @@ class MyApp extends StatelessWidget {
 }
 
 class UnknownRouteScreen extends StatelessWidget {
-  const UnknownRouteScreen({Key? key}) : super(key: key);
+  const UnknownRouteScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
