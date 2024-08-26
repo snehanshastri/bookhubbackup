@@ -8,7 +8,8 @@ class AudioBook {
   final String description;
   final double rating;
   final double price;
-  String audioPath;
+  final String audioPath;
+  bool isPurchased;
 
   AudioBook({
     required this.id,
@@ -19,6 +20,7 @@ class AudioBook {
     required this.rating,
     required this.price,
     required this.audioPath,
+    this.isPurchased = false,
   });
 
   // Convert an AudioBook object into a Map for Firestore storage
@@ -31,61 +33,62 @@ class AudioBook {
       'description': description,
       'rating': rating,
       'price': price,
-      'audioPath': audioPath
+      'audioPath': audioPath,
+      'isPurchased': isPurchased,
     };
   }
 
   // Convert a Firestore Document Snapshot into an AudioBook object
   factory AudioBook.fromJson(Map<String, dynamic> json) {
-  return AudioBook(
-    id: json['id'] as String,
-    title: json['title'] as String,
-    coverImage: json['coverImage'] as String,
-    genre: json['genre'] as String,
-    description: json['description'] as String,
-    rating: (json['rating'] as num).toDouble(),
-    price: (json['price'] as num).toDouble(),
-     audioPath: json['audioPath'] as String,
-  );
+    return AudioBook(
+      id: json['id'] as String,
+      title: json['title'] as String,
+      coverImage: json['coverImage'] as String,
+      genre: json['genre'] as String,
+      description: json['description'] as String,
+      rating: (json['rating'] as num).toDouble(),
+      price: (json['price'] as num).toDouble(),
+      audioPath: json['audioPath'] as String,
+      isPurchased: json['isPurchased'] as bool? ?? false,
+    );
+  }
+
+  // CopyWith method
+  AudioBook copyWith({
+    String? id,
+    String? title,
+    String? coverImage,
+    String? genre,
+    String? description,
+    double? rating,
+    double? price,
+    String? audioPath,
+    bool? isPurchased,
+  }) {
+    return AudioBook(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      coverImage: coverImage ?? this.coverImage,
+      genre: genre ?? this.genre,
+      description: description ?? this.description,
+      rating: rating ?? this.rating,
+      price: price ?? this.price,
+      audioPath: audioPath ?? this.audioPath,
+      isPurchased: isPurchased ?? this.isPurchased,
+    );
+  }
 }
 
-}
-
-// Function to upload audio books to Firestore
 Future<void> uploadAudioBooks(List<AudioBook> audioBooks) async {
   final CollectionReference audioBooksCollection = FirebaseFirestore.instance.collection('audio_books');
 
   for (AudioBook audioBook in audioBooks) {
     final querySnapshot = await audioBooksCollection
-        .where('id', isEqualTo: audioBook.id)
-        .get();
-
-    if (querySnapshot.docs.isEmpty) {
-      await audioBooksCollection.doc(audioBook.id).set(audioBook.toJson());
-    }
-  }
-}
-
-// Function to fetch audio books from Firestore
-Future<List<AudioBook>> fetchAudioBooks() async {
-  final CollectionReference audioBooksCollection = FirebaseFirestore.instance.collection('audio_books');
-  final QuerySnapshot querySnapshot = await audioBooksCollection.get();
-
-  return querySnapshot.docs.map((doc) => AudioBook.fromJson(doc.data() as Map<String, dynamic>)).toList();
-}
-
-// Function to add audio books to Firestore
-Future<void> addAudioBooksToFirestore(List<AudioBook> audioBooks) async {
-  final firestore = FirebaseFirestore.instance;
-  final collectionRef = firestore.collection('audio_books');
-
-  for (var audioBook in audioBooks) {
-    final querySnapshot = await collectionRef
         .where('title', isEqualTo: audioBook.title)
         .get();
 
     if (querySnapshot.docs.isEmpty) {
-      await collectionRef.add(audioBook.toJson());
+      await audioBooksCollection.doc(audioBook.id).set(audioBook.toJson());
     }
   }
 }
