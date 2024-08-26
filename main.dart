@@ -1,119 +1,129 @@
-import 'package:firebase_auth/firebase_auth.dart' as auth;
-import 'package:bookhubapp/book_detail_screen.dart';
-import 'package:bookhubapp/cart.dart';
-import 'package:bookhubapp/landingpage.dart';
-import 'package:bookhubapp/loginpage.dart';
-import 'package:bookhubapp/models/audio_book.dart';
-import 'package:bookhubapp/models/books.dart';
-import 'package:bookhubapp/widgets/cartcontroller.dart';
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:bookhubapp/api/generated_books.dart';
-import 'package:bookhubapp/auth_service.dart';
-import 'package:bookhubapp/firebase_options.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:device_preview/device_preview.dart';
-import 'package:flutter/foundation.dart';
+import 'package:bookhubapp/models/audio_book.dart';
+import 'package:flutter/material.dart';
+import 'package:bookhubapp/widgets/filter_row_section.dart';
+import 'package:bookhubapp/discount_books.dart';
+import 'package:bookhubapp/popular_books.dart';
+import 'package:bookhubapp/models/books.dart';
+import 'package:bookhubapp/widgets/search_bar.dart';
+import 'package:bookhubapp/book_detail_screen.dart'; // Import your book detail screen file
 
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-
-  try {
-    if (kIsWeb) {
-      await Firebase.initializeApp(
-        options: const FirebaseOptions(
-          apiKey: 'AIzaSyBxuiUkqigdTkCLyJ3itOtwVmx92kL5WIE',
-          appId: "1:704652166711:web:d637f496e9263053d821b2",
-          messagingSenderId: "704652166711",
-          projectId: "bookhubapp-ca543",
-          storageBucket: "gs://bookhubapp-ca543.appspot.com"
-        ),
-      );
-    } else {
-      await Firebase.initializeApp(
-        options: DefaultFirebaseOptions.currentPlatform,
-      );
-    }
-
-    // Upload books and audio books only if Firebase initialization is successful
-    List<Book> books = getAllBooks();
-    await uploadBooks(books);
-    print("Books uploaded successfully");
-
-    List<AudioBook> audioBooks = getAllAudioBooks();
-    await uploadAudioBooks(audioBooks);
-    print("Audio books uploaded successfully");
-  } catch (e) {
-    print("Error initializing Firebase or uploading data: $e");
-  }
-
-  runApp(DevicePreview(
-    enabled: !kReleaseMode,
-    builder: (context) => const MyApp(),
-  ));
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class MarketScreen extends StatefulWidget {
+  const MarketScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return GetMaterialApp(
-      debugShowCheckedModeBanner: false,
-      useInheritedMediaQuery: true,
-      locale: DevicePreview.locale(context),
-      builder: DevicePreview.appBuilder,
-      initialRoute: '/',
-      getPages: [
-        GetPage(name: '/', page: () => const LandingPage()),
-        GetPage(name: '/login', page: () => LoginPage()),
-        
-        GetPage(
-          name: '/bookDetails',
-          page: () => BookDetailScreen(
-            book: Get.arguments['book'], // Pass the book object via Get.arguments
-            isLoggedIn: AuthService.isLoggedIn(),
-            updateCart: (List<Book> books, List<AudioBook> audioBooks) {},
-          ),
-          binding: BindingsBuilder(() {
-            Get.put(AuthService());
-            Get.put(CartController());
-          }),
-        ),
-        GetPage(
-          name: '/cart',
-          page: () {
-            auth.User? user = AuthService.currentUser;
-            if (user != null) {
-              return CartPage( firebaseUser: user) ;
-            } else {
-              return LoginPage();
-            }
-          },
-          binding: BindingsBuilder(() {
-            Get.put(CartController());
-          }),
-        ),
-      ],
-      unknownRoute: GetPage(
-        name: '/unknown',
-        page: () => const UnknownRouteScreen(),
+  _MarketScreenState createState() => _MarketScreenState();
+}
+
+class _MarketScreenState extends State<MarketScreen> {
+  String searchQuery = '';
+  List<Book> filteredBooks = [];
+
+  void updateSearchQuery(String query) {
+    setState(() {
+      searchQuery = query;
+      filteredBooks = getAllBooks()
+         .where((book) =>
+              book.title.toLowerCase().contains(query.toLowerCase()) ||
+              book.authorName.toLowerCase().contains(query.toLowerCase()))
+         .toList();
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    filteredBooks = getAllBooks(); // Initialize with all books
+  }
+
+  void goToBookDetails(BuildContext context, Book book) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => BookDetailScreen(book: book, isLoggedIn: true, updateCart: (List<Book> books, List<AudioBook> audioBooks) {  },),
       ),
     );
   }
-}
-
-class UnknownRouteScreen extends StatelessWidget {
-  const UnknownRouteScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Unknown Route'),
+        title: const Text(
+          "MARKET",
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black),
+        ),
+        centerTitle: true,
       ),
-      body: const Center(
-        child: Text('Unknown Route'),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          return SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SearchBarSection(onSearch: updateSearchQuery),
+                  const SizedBox(height: 24),
+                  const FilterRowSection(),
+                  const SizedBox(height: 24),
+                  if (searchQuery.isEmpty)
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          "Popular Books",
+                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black),
+                        ),
+                        const SizedBox(height: 10),
+                        PopularBooks(onBookTap: (BuildContext context, Book book) {}),
+                        const SizedBox(height: 24),
+                        const Text(
+                          "Discount Books",
+                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black),
+                        ),
+                        const SizedBox(height: 10),
+                        DiscountBooks(onBookTap: (BuildContext context, Book book) {}),
+                      ],
+                    ),
+                  if (searchQuery.isNotEmpty)
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          "Search Results",
+                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black),
+                        ),
+                        const SizedBox(height: 10),
+                        ListView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: filteredBooks.length,
+                          itemBuilder: (context, index) {
+                            final book = filteredBooks[index];
+                            return ListTile(
+                              leading: Image.network(book.imageUrl, width: 50, height: 50),
+                              title: Text(
+                                book.title,
+                                style: const TextStyle(color: Colors.black),
+                              ),
+                              subtitle: Text(
+                                book.authorName,
+                                style: const TextStyle(color: Colors.black),
+                              ),
+                              onTap: () {
+                                goToBookDetails(context, book); // Navigate to book detail screen
+                              },
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+                ],
+              ),
+            ),
+          );
+        },
       ),
     );
   }
